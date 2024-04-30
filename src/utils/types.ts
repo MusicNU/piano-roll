@@ -55,3 +55,7 @@ export enum FileOptions {
     IMPORT_MIDI = "Import MIDI file",
     EXPORT = "Export",
 }
+
+export enum SetMidi {
+    SET_MIDI_IMPORT = "Import set MIDI file"
+}

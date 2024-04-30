@@ -19,7 +19,7 @@ import {
     PlayingContext,
     SnapValueContext,
 } from "../../utils/context";
-import { FileFormat, FileOptions, PlayingType } from "../../utils/types";
+import { FileFormat, FileOptions, SetMidi, PlayingType } from "../../utils/types";
 import DraggableNumInput from "../draggable-num-input/DraggableNumInput";
 import { DownloadFileDialog } from "./DownloadFileDialog";
 import { AiOutlineFileText } from "react-icons/ai";
@@ -69,12 +69,26 @@ export const Header = ({
         fileInputRef.current?.click();
     };
 
+    const importSetFile = () => {
+        // set fileInputRef to a local file, not a clicked file, using fileInputRef
+        if (fileInputRef.current){
+            fileInputRef.current.value = './1.mid'
+        }
+    };
+
     const handleFileOptionChange = (option: FileOptions) => {
         switch (option) {
             case FileOptions.IMPORT_MIDI:
                 return clickImportFile();
             case FileOptions.EXPORT:
                 return handleToggleDownloadFileDialog();
+        }
+    };
+
+    const setMidiImport = (option: SetMidi) => {
+        switch (option) {
+            case SetMidi.SET_MIDI_IMPORT:
+                return importSetFile;
         }
     };
 
@@ -229,6 +243,23 @@ export const Header = ({
                                 />
                             </div>
                         </ClickAwayListener>
+                    </div>
+
+                    <div className="ml-2" title="File Options">
+                        <DropDown
+                            icon={
+                                <AiOutlineFileText
+                                    className={"w-5 h-5 " + toolStyle}
+                                />
+                            }
+                            onChange={setMidiImport}
+                            options={Object.values(SetMidi).map(
+                                (option) => ({
+                                    label: option,
+                                    value: option,
+                                })
+                            )}
+                        />
                     </div>
 
                     <div className="ml-2" title="Instrument">
