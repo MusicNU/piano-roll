@@ -85,11 +85,25 @@ export const Header = ({
         }
     };
 
-    const setMidiImport = (option: SetMidi) => {
-        switch (option) {
-            case SetMidi.SET_MIDI_IMPORT:
-                return importSetFile;
+    async function setMidiImport (midiId: number): Promise<any>{
+        // switch (option) {
+        //     case SetMidi.SET_MIDI_IMPORT:
+        //         return importSetFile;
+        // }
+        const url = `http://127.0.0.1:6030/midi/2`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const data = await response.json();  // Assuming the server sends JSON
+            console.log(data);  // Log data to see what is returned from the server
+            return data;
+        } catch (error) {
+            console.error("Error fetching MIDI data:", error);
+            throw error;  // Optionally re-throw the error for handling higher up
         }
+        
     };
 
     const handleChangeInstrument = async (instrument: InstrumentName) => {
