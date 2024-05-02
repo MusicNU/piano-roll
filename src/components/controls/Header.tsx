@@ -69,12 +69,12 @@ export const Header = ({
         fileInputRef.current?.click();
     };
 
-    const importSetFile = () => {
-        // set fileInputRef to a local file, not a clicked file, using fileInputRef
-        if (fileInputRef.current){
-            fileInputRef.current.value = './1.mid'
-        }
-    };
+    // const importSetFile = () => {
+    //     // set fileInputRef to a local file, not a clicked file, using fileInputRef
+    //     if (fileInputRef.current){
+    //         fileInputRef.current.value = './1.mid'
+    //     }
+    // };
 
     const handleFileOptionChange = (option: FileOptions) => {
         switch (option) {
@@ -85,26 +85,67 @@ export const Header = ({
         }
     };
 
-    async function setMidiImport (midiId: number): Promise<any>{
-        // switch (option) {
-        //     case SetMidi.SET_MIDI_IMPORT:
-        //         return importSetFile;
-        // }
-        const url = `http://127.0.0.1:6030/midi/2`;
-        try {
+    // async function setMidiImport (midiId: number): Promise<any>{
+    //     // switch (option) {
+    //     //     case SetMidi.SET_MIDI_IMPORT:
+    //     //         return importSetFile;
+    //     // }
+    //     const url = `http://127.0.0.1:6030/midi/2`;
+    //     try {
+    //         const response = await fetch(url);
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! Status: ${response.status}`);
+    //         }
+    //         const data = await response.json();  // Assuming the server sends JSON
+    //         console.log(data);  // Log data to see what is returned from the server
+    //         return data;
+    //     } catch (error) {
+    //         console.error("Error fetching MIDI data:", error);
+    //         throw error;  // Optionally re-throw the error for handling higher up
+    //     }
+        
+    // };
+
+    async function setMidiImport (midiId: number) {
+        const url = `http://127.0.0.1:6030/midi/1`;
+    try {
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            const data = await response.json();  // Assuming the server sends JSON
-            console.log(data);  // Log data to see what is returned from the server
-            return data;
+            const data = await response.json(); // Assuming the server sends JSON with a base64 encoded string
+            console.log(data["encoded_midi"]);
+            if (!data["encoded_midi"]) {
+                throw new Error('Base64 string is missing from the response');
+            }
+    
+            
+            // Convert base64 to a Blob
+            const binaryString = window.atob(data["encoded_midi"]);
+            console.log(binaryString);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const blob = new Blob([bytes], {type: 'audio/midi'});
+    
+            // Save the Blob as a MIDI file
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = 'downloadedMidiFile.mid'; // Set the file name for download
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // Optionally, if you want to store the file on the server, you'll need to upload the blob
+            // uploadBlob(blob);
+    
         } catch (error) {
-            console.error("Error fetching MIDI data:", error);
-            throw error;  // Optionally re-throw the error for handling higher up
+            console.error("Failed to fetch or save MIDI file:", error);
         }
-        
-    };
+    }
 
     const handleChangeInstrument = async (instrument: InstrumentName) => {
         const newNotes = { ...notes };
