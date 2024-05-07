@@ -106,46 +106,73 @@ export const Header = ({
         
     // };
 
-    async function setMidiImport (midiId: number) {
-        const url = `http://127.0.0.1:6030/midi/1`;
-    try {
-            const response = await fetch(url);
+    // async function setMidiImport (midiId: number) {
+    //     const url = `http://127.0.0.1:6030/midi/1`;
+    // try {
+    //         const response = await fetch(url);
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! Status: ${response.status}`);
+    //         }
+    //         const data = await response.json(); // Assuming the server sends JSON with a base64 encoded string
+    //         console.log(data["encoded_midi"]);
+    //         if (!data["encoded_midi"]) {
+    //             throw new Error('Base64 string is missing from the response');
+    //         }
+    //         // Convert base64 to a Blob
+    //         const binaryString = window.atob(data["encoded_midi"]);
+    //         const len = binaryString.length;
+    //         const bytes = new Uint8Array(len);
+    //         for (let i = 0; i < len; i++) {
+    //             bytes[i] = binaryString.charCodeAt(i);
+    //         }
+    //         const blob = new Blob([bytes], {type: 'audio/midi'});
+    
+    //         // Save the Blob as a MIDI file
+    //         const blobUrl = URL.createObjectURL(blob);
+    //         const a = document.createElement('a');
+    //         a.href = blobUrl;
+    //         a.download = 'downloadedMidiFile.mid'; // Set the file name for download
+    //         document.body.appendChild(a);
+    //         a.click();
+    //         document.body.removeChild(a);
+    
+    //     } catch (error) {
+    //         console.error("Failed to fetch or save MIDI file:", error);
+    //     }
+    // }
+
+    async function setMidiImport(midiId: number) {
+        const fetchUrl = `http://127.0.0.1:6030/midi/2`; // URL to fetch the MIDI data
+        try {
+            // Fetch MIDI data from the initial server
+            const response = await fetch(fetchUrl);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            const data = await response.json(); // Assuming the server sends JSON with a base64 encoded string
-            console.log(data["encoded_midi"]);
+            const data = await response.json();
             if (!data["encoded_midi"]) {
                 throw new Error('Base64 string is missing from the response');
             }
-    
             
-            // Convert base64 to a Blob
-            const binaryString = window.atob(data["encoded_midi"]);
-            console.log(binaryString);
-            const len = binaryString.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
+            // URL of your Node.js server to save the MIDI file
+            const saveUrl = `http://127.0.0.1:3000/save-midi`;
+            // Send the MIDI data to your server to save it
+            const saveResponse = await fetch(saveUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ encoded_midi: data["encoded_midi"] })
+            });
+            if (!saveResponse.ok) {
+                throw new Error(`HTTP error! Status: ${saveResponse.status}`);
             }
-            const blob = new Blob([bytes], {type: 'audio/midi'});
-    
-            // Save the Blob as a MIDI file
-            const blobUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = 'downloadedMidiFile.mid'; // Set the file name for download
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            // Optionally, if you want to store the file on the server, you'll need to upload the blob
-            // uploadBlob(blob);
-    
+            console.log('MIDI file saved successfully.');
         } catch (error) {
             console.error("Failed to fetch or save MIDI file:", error);
         }
     }
+    
 
     const handleChangeInstrument = async (instrument: InstrumentName) => {
         const newNotes = { ...notes };
